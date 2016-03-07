@@ -9,6 +9,9 @@
 		<meta name="theme-color" content="#000000"/>
 		<meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1"/>
 		<title>Strand Web Components</title>
+		<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+		<link rel="apple-touch-icon" href="apple-iphone-icon@2x.png" sizes="120x120" type="image/png" />
+		<link rel="apple-touch-icon" href="apple-ipad-icon@2x.png" sizes="152x152" type="image/png" />
 		<script language="javascript" src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
 		<link rel="stylesheet" type="text/css" href="docs.css"/>
 		<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.8.0/styles/github.min.css">
@@ -20,8 +23,9 @@
 		<script language="javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 		<script language="javascript" src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
 		<script language="javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.8.0/highlight.min.js"></script>
-	</head>	<body unresolved>
-		<mm-docs-shell id="docsShell" version="2.0.1" mobile-header="Strand Docs">
+	</head>
+	<body unresolved>
+		<mm-docs-shell id="docsShell" version="3.0.0" mobile-header="Strand Docs">
 			<mm-docs-nav id="articlesNav">
 				<mm-header size="medium">Articles</mm-header>
 				<mm-list-item id="getting_started" value="article_getting_started.html">Getting Started</mm-list-item>
@@ -31,7 +35,9 @@
 				<mm-list-item id="grid_intro" value="article_grid_intro.html">Introduction to mm-grid</mm-list-item>
 				<mm-list-item id="grid_config" value="article_grid_config.html" class="child"> Configuring mm-grid</mm-list-item>
 				<mm-list-item id="grid_data_integration" value="article_grid_data_integration.html" class="child"> Data Integration with mm-grid</mm-list-item>
+				<mm-list-item id="grid_custom_grid_item" value="article_grid_custom_grid_item.html" class="child"> Creating Custom Grid Items</mm-list-item>
 				<mm-list-item id="migration_guide" value="article_migration_guide.html">Migration Guide</mm-list-item>
+				<mm-list-item id="repeater" value="article_repeater.html">Using mm-repeater</mm-list-item>
 			</mm-docs-nav>
 			<mm-docs-nav id="componentsNav">
 				<mm-header size="medium">Components</mm-header>
@@ -49,6 +55,7 @@
 				<mm-list-item id="mm-dropdown" value="mm-dropdown.html">mm-dropdown</mm-list-item>
 				<mm-list-item id="mm-file-upload" value="mm-file-upload.html">mm-file-upload</mm-list-item>
 				<mm-list-item id="mm-footer" value="mm-footer.html">mm-footer</mm-list-item>
+				<mm-list-item id="mm-form" value="mm-form.html">mm-form</mm-list-item>
 				<mm-list-item id="mm-grid-column" value="mm-grid-column.html">mm-grid-column</mm-list-item>
 				<mm-list-item id="mm-grid-item" value="mm-grid-item.html">mm-grid-item</mm-list-item>
 				<mm-list-item id="mm-grid" value="mm-grid.html">mm-grid</mm-list-item>
@@ -68,6 +75,7 @@
 				<mm-list-item id="mm-progress-bar" value="mm-progress-bar.html">mm-progress-bar</mm-list-item>
 				<mm-list-item id="mm-pulldown-button" value="mm-pulldown-button.html">mm-pulldown-button</mm-list-item>
 				<mm-list-item id="mm-radio" value="mm-radio.html">mm-radio</mm-list-item>
+				<mm-list-item id="mm-repeater" value="mm-repeater.html">mm-repeater</mm-list-item>
 				<mm-list-item id="mm-scroll-panel" value="mm-scroll-panel.html">mm-scroll-panel</mm-list-item>
 				<mm-list-item id="mm-spinner" value="mm-spinner.html">mm-spinner</mm-list-item>
 				<mm-list-item id="mm-sync" value="mm-sync.html">mm-sync</mm-list-item>
@@ -80,7 +88,7 @@
 				<a class="strand-logo">
 					<img src="images/strand-logo.svg" />
 				</a>
-				<p class="mini-subhead version">v2.0.1</p>
+				<p class="mini-subhead version">v3.0.0</p>
 			</div>			<footer class="layout-footer">
 				<div class="docs-footer">
 					<div class="footer-logo-box">
@@ -102,41 +110,34 @@
 					<section>
 						<h3>Example HTML Editor</h3>
 						<div class="editor-wrapper">
-							<div id="editor">&lt;mm-grid id=&quot;mmTestGrid1&quot; selectable style=&quot;width: 100%; height: 300px;&quot;&gt;
+							<div id="editor">&lt;!-- A default grid item example --&gt;
+&lt;mm-grid id=&quot;mmTestGrid1&quot; selectable style=&quot;width: 100%; height: 300px;&quot;&gt;
 	&lt;mm-grid-column field=&quot;first_name&quot;&gt;First Name&lt;/mm-grid-column&gt;
 	&lt;mm-grid-column field=&quot;last_name&quot;&gt;Last Name&lt;/mm-grid-column&gt;
 	&lt;mm-grid-column field=&quot;email&quot;&gt;Email&lt;/mm-grid-column&gt;
 &lt;/mm-grid&gt;
 
-&lt;mm-grid id=&quot;mmTestGrid2&quot; selectable expandable item-template=&quot;customTemplate&quot; style=&quot;width: 100%; height: 300px;&quot;&gt;
+&lt;!-- A custom grid item example --&gt;
+&lt;mm-grid id=&quot;mmTestGrid2&quot; selectable expandable style=&quot;width: 100%; height: 300px;&quot;&gt;
 	&lt;mm-grid-column width=&quot;20%&quot; field=&quot;name&quot; sort resize&gt;Name&lt;/mm-grid-column&gt;
 	&lt;mm-grid-column width=&quot;20%&quot; field=&quot;id&quot; sort resize&gt;Id&lt;/mm-grid-column&gt;
 	&lt;mm-grid-column width=&quot;20%&quot; field=&quot;advertiser&quot; sort resize&gt;Advertiser&lt;/mm-grid-column&gt;
 	&lt;mm-grid-column width=&quot;20%&quot; field=&quot;concept&quot; sort resize&gt;Concept&lt;/mm-grid-column&gt;
 	&lt;mm-grid-column width=&quot;10%&quot; field=&quot;type&quot; resize&gt;Type&lt;/mm-grid-column&gt;
-	&lt;mm-grid-column width=&quot;10%&quot; field=&quot;actions&quot;&gt;&lt;/mm-grid-column&gt;
-	&lt;template id=&quot;customTemplate&quot;&gt;
+	&lt;mm-grid-column width=&quot;10%&quot; field=&quot;info&quot;&gt;&lt;/mm-grid-column&gt;
+	&lt;template preserve-content&gt;
 		&lt;mm-grid-item model=&quot;{{model}}&quot; scope=&quot;{{scope}}&quot;&gt;
-			&lt;div field=&quot;actions&quot;&gt;
-				&lt;!-- Using mm-tooltip in a custom grid item --&gt;
-				&lt;mm-icon width=&quot;15&quot; height=&quot;15&quot; type=&quot;actions&quot; id=&quot;{{createId(&#39;tooltip&#39;, model.id)}}&quot;&gt;&lt;/mm-icon&gt;
-				&lt;mm-tooltip model=&quot;{{model}}&quot; target$=&quot;{{createId(&#39;#tooltip&#39;, model.id)}}&quot;&gt;
-					&lt;label&gt;I&#39;m a tooltip for Creative - &lt;span&gt;{{model.name}}&lt;/span&gt;&lt;/label&gt;
-				&lt;/mm-tooltip&gt;
-				&lt;!-- Using mm-menu in a custom grid item - uncomment to try --&gt;
-				&lt;!--
-				&lt;mm-icon type=&quot;actions&quot; id=&quot;{{createId(&#39;menu&#39;, model.id)}}&quot; width=&quot;15&quot; height=&quot;15&quot;&gt;&lt;/mm-icon&gt;
-				&lt;mm-menu id=&quot;testMenu&quot; direction=&quot;s&quot; offset=&quot;15&quot; target$=&quot;{{createId(&#39;#menu&#39;, model.id)}}&quot;&gt;
-					&lt;mm-list-item value=&quot;m1&quot;&gt;menu item 1&lt;/mm-list-item&gt;
-					&lt;mm-list-item value=&quot;m2&quot;&gt;menu item 2&lt;/mm-list-item&gt;
-					&lt;mm-list-item value=&quot;m3&quot;&gt;menu item 3&lt;/mm-list-item&gt;
-					&lt;mm-list-item value=&quot;m4&quot;&gt;menu item 4&lt;/mm-list-item&gt;
-					&lt;mm-list-item value=&quot;m5&quot;&gt;menu item 5&lt;/mm-list-item&gt;
-				&lt;/mm-menu&gt;
-				--&gt;
-			&lt;/div&gt;
 			&lt;div field=&quot;name&quot;&gt;
 				Creative - &lt;span&gt;{{model.name}}&lt;/span&gt;
+			&lt;/div&gt;
+			&lt;div field=&quot;info&quot;&gt;
+				&lt;mm-icon type=&quot;info&quot; id=&quot;infoIcon&quot; width=&quot;12&quot; height=&quot;12&quot;&gt;&lt;/mm-icon&gt;
+				&lt;mm-tooltip 
+					id=&quot;infoTip&quot;
+					model=&quot;{{model}}&quot; 
+					target=&quot;{{findById(&#39;infoIcon&#39;)}}&quot;&gt;
+						&lt;label&gt;{{model.tip}}&lt;/label&gt;
+					&lt;/mm-tooltip&gt;
 			&lt;/div&gt;
 			&lt;div class=&quot;expansion&quot;&gt;
 				&lt;div class=&quot;expansion-row&quot;&gt;
@@ -193,7 +194,8 @@
 			type: &quot;swf&quot;,
 			file: &quot;Creative_File_&quot; + i + &quot;.swf&quot;,
 			selected: false,
-			expanded: false
+			expanded: false,
+			tip: &quot;Some special info here &quot; + i
 		});
 	}
 
@@ -207,41 +209,34 @@
 					</section>
 					<section>
 						<h3>Example Output</h3>
-						<div class="content-box example" id="example-mm-grid"><mm-grid id="mmTestGrid1" selectable style="width: 100%; height: 300px;">
+						<div class="content-box example" id="example-mm-grid"><!-- A default grid item example -->
+<mm-grid id="mmTestGrid1" selectable style="width: 100%; height: 300px;">
 	<mm-grid-column field="first_name">First Name</mm-grid-column>
 	<mm-grid-column field="last_name">Last Name</mm-grid-column>
 	<mm-grid-column field="email">Email</mm-grid-column>
 </mm-grid>
 
-<mm-grid id="mmTestGrid2" selectable expandable item-template="customTemplate" style="width: 100%; height: 300px;">
+<!-- A custom grid item example -->
+<mm-grid id="mmTestGrid2" selectable expandable style="width: 100%; height: 300px;">
 	<mm-grid-column width="20%" field="name" sort resize>Name</mm-grid-column>
 	<mm-grid-column width="20%" field="id" sort resize>Id</mm-grid-column>
 	<mm-grid-column width="20%" field="advertiser" sort resize>Advertiser</mm-grid-column>
 	<mm-grid-column width="20%" field="concept" sort resize>Concept</mm-grid-column>
 	<mm-grid-column width="10%" field="type" resize>Type</mm-grid-column>
-	<mm-grid-column width="10%" field="actions"></mm-grid-column>
-	<template id="customTemplate">
+	<mm-grid-column width="10%" field="info"></mm-grid-column>
+	<template preserve-content>
 		<mm-grid-item model="{{model}}" scope="{{scope}}">
-			<div field="actions">
-				<!-- Using mm-tooltip in a custom grid item -->
-				<mm-icon width="15" height="15" type="actions" id="{{createId('tooltip', model.id)}}"></mm-icon>
-				<mm-tooltip model="{{model}}" target$="{{createId('#tooltip', model.id)}}">
-					<label>I'm a tooltip for Creative - <span>{{model.name}}</span></label>
-				</mm-tooltip>
-				<!-- Using mm-menu in a custom grid item - uncomment to try -->
-				<!--
-				<mm-icon type="actions" id="{{createId('menu', model.id)}}" width="15" height="15"></mm-icon>
-				<mm-menu id="testMenu" direction="s" offset="15" target$="{{createId('#menu', model.id)}}">
-					<mm-list-item value="m1">menu item 1</mm-list-item>
-					<mm-list-item value="m2">menu item 2</mm-list-item>
-					<mm-list-item value="m3">menu item 3</mm-list-item>
-					<mm-list-item value="m4">menu item 4</mm-list-item>
-					<mm-list-item value="m5">menu item 5</mm-list-item>
-				</mm-menu>
-				-->
-			</div>
 			<div field="name">
 				Creative - <span>{{model.name}}</span>
+			</div>
+			<div field="info">
+				<mm-icon type="info" id="infoIcon" width="12" height="12"></mm-icon>
+				<mm-tooltip 
+					id="infoTip"
+					model="{{model}}" 
+					target="{{findById('infoIcon')}}">
+						<label>{{model.tip}}</label>
+					</mm-tooltip>
 			</div>
 			<div class="expansion">
 				<div class="expansion-row">
@@ -298,7 +293,8 @@
 			type: "swf",
 			file: "Creative_File_" + i + ".swf",
 			selected: false,
-			expanded: false
+			expanded: false,
+			tip: "Some special info here " + i
 		});
 	}
 
@@ -316,6 +312,17 @@
 							<tr>
 								<th>Property</th>
 								<th>Description</th>
+							</tr>
+							<tr>
+								<td>
+									<span class="bold">ref : </span><span class="italic">Object&nbsp;&nbsp;</span><br/>
+									options : <span class="italic">none</span><br/>
+									attribute : <span class="italic">ref</span><br/>
+									reflected to attribute : <span class="italic">no</span>
+								</td>
+								<td>
+									<span class="desc">Returns a referece to the component itself.</span>
+								</td>
 							</tr>
 							<tr>
 								<td>
@@ -479,6 +486,19 @@
 							</tr>
 							<tr>
 								<td>
+									<span class="bold">findById</span>(<span><span class="italic option">id</span></span>)<br/>
+									<span class="desc">Returns a reference to an element within the scope of this element. Intended for complex nested circumstances where the components scope could be changed (like custom mm-grid items).</span>
+								</td>
+								<td>
+									<span class="arg">
+										<span class="bold">id : </span><span class="italic">String</span><br/>
+										default : <span class="italic">none</span><br/>
+										<span class="desc">The id of the component to find.</span>
+									</span>
+								</td>
+							</tr>
+							<tr>
+								<td>
 									<span class="bold">createId</span>(<span><span class="italic option">string</span><span class="italic option">id</span></span>)<br/>
 									<span class="desc">Creates a unique identification string for positionable elements nested within an mm-grid. This will be necessary when using mm-menu, mm-popover, or mm-tooltip within a custom mm-grid-item (see: mm-popover, mm-tooltip, mm-menu).</span>
 								</td>
@@ -554,9 +574,10 @@
 					<section>
 						<h3>Related Articles</h3>
 						<ul>
-							<li><a href="article_grid_intro.html"> Introduction to mm-grid</a></li>
-							<li><a href="article_grid_config.html"> Configuring mm-grid</a></li>
-							<li><a href="article_grid_data_integration.html"> Data Integration with mm-grid</a></li>
+							<li><a href="">mm-grid</a></li>
+							<li><a href="">mm-grid</a></li>
+							<li><a href="">mm-grid</a></li>
+							<li><a href="">mm-grid</a></li>
 						</ul>
 					</section>
 				</div>

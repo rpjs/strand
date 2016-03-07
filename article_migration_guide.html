@@ -9,6 +9,9 @@
 		<meta name="theme-color" content="#000000"/>
 		<meta name="viewport" content="width=device-width,minimum-scale=1,maximum-scale=1"/>
 		<title>Strand Web Components</title>
+		<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+		<link rel="apple-touch-icon" href="apple-iphone-icon@2x.png" sizes="120x120" type="image/png" />
+		<link rel="apple-touch-icon" href="apple-ipad-icon@2x.png" sizes="152x152" type="image/png" />
 		<script language="javascript" src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
 		<link rel="stylesheet" type="text/css" href="docs.css"/>
 		<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.8.0/styles/github.min.css">
@@ -20,8 +23,9 @@
 		<script language="javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 		<script language="javascript" src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
 		<script language="javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.8.0/highlight.min.js"></script>
-	</head>	<body unresolved>
-		<mm-docs-shell id="docsShell" version="2.0.1" mobileHeader="Strand Docs">
+	</head>
+	<body unresolved>
+		<mm-docs-shell id="docsShell" version="3.0.0" mobileHeader="Strand Docs">
 			<mm-docs-nav id="articlesNav">
 				<mm-header size="medium">Articles</mm-header>
 				<mm-list-item id="getting_started" value="article_getting_started.html">Getting Started</mm-list-item>
@@ -31,7 +35,9 @@
 				<mm-list-item id="grid_intro" value="article_grid_intro.html">Introduction to mm-grid</mm-list-item>
 				<mm-list-item id="grid_config" value="article_grid_config.html" class="child"> Configuring mm-grid</mm-list-item>
 				<mm-list-item id="grid_data_integration" value="article_grid_data_integration.html" class="child"> Data Integration with mm-grid</mm-list-item>
+				<mm-list-item id="grid_custom_grid_item" value="article_grid_custom_grid_item.html" class="child"> Creating Custom Grid Items</mm-list-item>
 				<mm-list-item id="migration_guide" value="article_migration_guide.html">Migration Guide</mm-list-item>
+				<mm-list-item id="repeater" value="article_repeater.html">Using mm-repeater</mm-list-item>
 			</mm-docs-nav>
 			<mm-docs-nav id="componentsNav">
 				<mm-header size="medium">Components</mm-header>
@@ -49,6 +55,7 @@
 				<mm-list-item id="mm-dropdown" value="mm-dropdown.html">mm-dropdown</mm-list-item>
 				<mm-list-item id="mm-file-upload" value="mm-file-upload.html">mm-file-upload</mm-list-item>
 				<mm-list-item id="mm-footer" value="mm-footer.html">mm-footer</mm-list-item>
+				<mm-list-item id="mm-form" value="mm-form.html">mm-form</mm-list-item>
 				<mm-list-item id="mm-grid-column" value="mm-grid-column.html">mm-grid-column</mm-list-item>
 				<mm-list-item id="mm-grid-item" value="mm-grid-item.html">mm-grid-item</mm-list-item>
 				<mm-list-item id="mm-grid" value="mm-grid.html">mm-grid</mm-list-item>
@@ -68,6 +75,7 @@
 				<mm-list-item id="mm-progress-bar" value="mm-progress-bar.html">mm-progress-bar</mm-list-item>
 				<mm-list-item id="mm-pulldown-button" value="mm-pulldown-button.html">mm-pulldown-button</mm-list-item>
 				<mm-list-item id="mm-radio" value="mm-radio.html">mm-radio</mm-list-item>
+				<mm-list-item id="mm-repeater" value="mm-repeater.html">mm-repeater</mm-list-item>
 				<mm-list-item id="mm-scroll-panel" value="mm-scroll-panel.html">mm-scroll-panel</mm-list-item>
 				<mm-list-item id="mm-spinner" value="mm-spinner.html">mm-spinner</mm-list-item>
 				<mm-list-item id="mm-sync" value="mm-sync.html">mm-sync</mm-list-item>
@@ -80,7 +88,7 @@
 				<a class="strand-logo">
 					<img src="images/strand-logo.svg" />
 				</a>
-				<p class="mini-subhead version">v2.0.1</p>
+				<p class="mini-subhead version">v3.0.0</p>
 			</div>			<footer class="layout-footer">
 				<div class="docs-footer">
 					<div class="footer-logo-box">
@@ -117,19 +125,18 @@
 <h2 id="removal-of-the-bindmodel-method">Removal of the bindModel method</h2>
 <p>Previously, a <code>bindModel</code> method was provided as a convenience to bind a property on the given model to the input&#39;s value. The <code>bindModel</code> method has been deprecated. The components affected are: <a href="/mm-dropdown.html">mm-dropdown</a>, <a href="/mm-checkbox.html">mm-checkbox</a>, <a href="/mm-input.html">mm-input</a>, <a href="/mm-textarea.html">mm-textarea</a>, and <a href="/mm-group.html">mm-group</a>.</p>
 <hr>
-<h2 id="removal-of-unresolved-attribute">Removal of unresolved attribute</h2>
-<p>Previously, if an attribute of <code>unresolved</code> was added to a component, that attribute would be removed by Polymer 0.5 when the component was upgraded. Currently, the <code>unresolved</code> attribute may be used on the <code>body</code> element only.</p>
-<p>Before:</p>
-<pre><code class="lang-html">&lt;mm-dropdown placeholder=&quot;Select One&quot; unresolved&gt;
+<h2 id="the-unresolved-attribute">The unresolved attribute</h2>
+<p>Although Polymer no longer supports the <code>unresolved</code> attribute per component (the <code>unresolved</code> attribute may still be used on the <code>body</code> element), Strand still supports this via the <code>StrandTraits.Resolvable</code> behavior. The <code>unresolved</code> attribute will be removed upon component <code>ready</code>.</p>
+<p>Before &amp; After:</p>
+<pre><code class="lang-html">&lt;style&gt;
+    mm-dropdown[unresolved] {
+        display: none;
+    }
+&lt;/style&gt;
+
+&lt;mm-dropdown placeholder=&quot;Select One&quot; unresolved&gt;
     ...
 &lt;/mm-dropdown&gt;
-</code></pre>
-<p>After:</p>
-<pre><code class="lang-html">&lt;body unresolved&gt;
-    &lt;mm-dropdown placeholder=&quot;Select One&quot;&gt;
-        ...
-    &lt;/mm-dropdown&gt;
-&lt;/body&gt;
 </code></pre>
 <hr>
 <h2 id="mm-icon">mm-icon</h2>
@@ -139,12 +146,12 @@
 </code></pre>
 <p>After:</p>
 <pre><code class="lang-html">&lt;style&gt;
-#myIcon {
-    color: #666666;
-}
-#myIcon:hover {
-    color: #333333;
-}
+    #myIcon {
+        color: #666666;
+    }
+    #myIcon:hover {
+        color: #333333;
+    }
 &lt;/style&gt;
 &lt;mm-icon type=&quot;actions&quot; width=&quot;32&quot; height=&quot;32&quot;&gt;&lt;/mm-icon&gt;
 </code></pre>
@@ -244,7 +251,7 @@
 			</article>
 		</mm-docs-shell>
 		<script>
-			var name = "migration_guide",
+			var name = "",
 				articlesNav,
 				componentsNav,
 				docsShell,
