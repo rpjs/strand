@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+  <head>
+	<script language="javascript" src="../../bower_components/webcomponentsjs/webcomponents.js"></script>
+	<link rel="import" href="strand-guide-tooltip.html" />
+	<style type="text/css">
+			body, html {
+				height: 100%;
+				min-height: 100%;
+			}
+
+			body {  
+				margin:0;
+				padding:0;
+				background: #eee;
+			}
+
+			.col {
+				-webkit-box-sizing: border-box;
+				-moz-box-sizing: border-box;
+				box-sizing: border-box;
+				display: block;
+				float: left;
+				padding: 0 20px;
+				font-size: 0;
+			}
+
+			.col.c0 {
+				width:400px;
+			}
+
+			.col.c1 {
+				width:300px;
+			}
+
+			.col.c2 {
+				width:200px;
+			}
+
+			.col.c3 {
+				width:500px;
+			}
+
+			.col.c4 {
+				width:49%;
+			}
+
+			.col:after {
+				visibility: hidden;
+				display: block;
+				font-size: 0;
+				content: " ";
+				clear: both;
+				height: 0;
+			}
+
+			p {
+				font-family: sans-serif;
+				color: #333;
+				font-size: 12px;
+				line-height: 18px;
+				margin: 20px 0;
+			}
+
+			.bold { font-weight: bold; }
+
+			hr {
+				border: 0;
+				display: block;
+				border-bottom: 1px solid #fff;
+				border-top: 1px solid #ccc;
+				height: 0px;
+				margin-top: 20px;
+			}
+
+			.vr {
+				width:0px;
+				height: 100%;
+				border-right: 1px solid #fff;
+				border-left: 1px solid #ccc;
+				display: block;
+				float: left;
+			}
+		</style>
+  </head>
+  <body>
+
+  	<div style="margin:50px;">
+		<strand-guide-tooltip id="tt1"></strand-guide-tooltip>
+		<button id="button1">button 1</button>
+	</div>
+
+	<div style="margin:375px 50px 50px 50px;">
+		<strand-guide-tooltip id="tt2"></strand-guide-tooltip>
+		<button id="button2">button 2</button>
+	</div>
+
+	<script>
+		window.addEventListener("WebComponentsReady", function() {
+			var tt1 = document.querySelector('#tt1');
+			var tt2 = document.querySelector('#tt2');
+
+			var data1 = [{
+				target: 'button1',
+				header: 'IP Targeting Now Available!',
+				message: 'You can now target/anti-target IP addresses. For more information, please visit the',
+				dismiss: 'Thanks, I\'ve got it.',
+				linktext: 'Knowledge Base',
+				linkurl: 'http://www.example.com'
+			}];
+
+			var data2 = [{
+				target: 'button2',
+				header: 'IP Targeting Now Available!',
+				message: 'You can now target/anti-target IP addresses. For more information, please visit the',
+				linktext: 'KB',
+				linkurl: 'http://www.example.com'
+			}];
+
+			data1[0].targetRef = document.querySelector('#button1');
+			data2[0].targetRef = document.querySelector('#button2');
+
+			tt1.data = data1;
+			tt2.data = data2;
+
+			tt1.currentStep = 0;
+			tt2.currentStep = 0;
+		});
+	</script>
+
+  </body>
+</html>

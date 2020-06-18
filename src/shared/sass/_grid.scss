@@ -12,6 +12,7 @@
 	vertical-align: middle;
 	box-sizing: border-box;
 	float: left;
+	min-height: 1px;
 
 	&.right {
 		text-align: right;
@@ -35,14 +36,14 @@
 	&.toggle {
 		width: 10px;
 
-		mm-icon {
+		strand-icon {
 			cursor: pointer;
-			transform: rotate(-90deg);
+			transform: translateY(-1px) rotate(-90deg);
 		}
 
 		&.expanded {
-			mm-icon {
-				transform: rotate(0deg);
+			strand-icon {
+				transform: translateY(-1px) rotate(0deg);
 			}
 		}
 	}

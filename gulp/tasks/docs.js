@@ -9,6 +9,7 @@
 	var del = require('del');
 	var autoprefixer = require('autoprefixer');
 	var hogan = require('hogan.js');
+	var jsonlint = require("gulp-jsonlint");
 
 	//stream/gulp related
 	var merge = require('merge-stream');
@@ -16,6 +17,7 @@
 	var gulp = require('gulp');
 	var through = require('through2');
 	var run = require('run-sequence');
+
 
 	module.exports = function(gulp, plugins, C) {
 
@@ -57,6 +59,12 @@
 		});
 
 		gulp.task('docs:templates', function() {
+
+			//orphaning this pipeline cause i dont think we care when it finishes
+			gulp.src("./src/strand-*/doc.json")
+				.pipe(jsonlint())
+				.pipe(jsonlint.reporter());
+
 			function lookupArticle(list, key) {
 				for(var i=0; i<list.length; i++) {
 				 	if (list[i].key === key) {
@@ -127,8 +135,12 @@
 					// Inject metadata
 					moduleDoc.revision = pkg.version;
 					moduleDoc.modules = moduleMap;
-					moduleDoc.articleList = articleList;
 					moduleDoc.articleMap = articleMap;
+					if(moduleDoc.articles) {
+						moduleDoc.articles = moduleDoc.articles.map(function(articleName) {
+							return lookupArticle(articleList, articleName);
+						});
+					}
 					if(example) moduleDoc.example = example;
 
 					file.contents = new Buffer(JSON.stringify(moduleDoc), enc);
@@ -263,7 +275,8 @@
 			return gulp.src(C.BUILD_DOCS+'**/*')
 				.pipe(C.dbg('gh-pages'))
 				.pipe(plugins.ghPages({
-					message: 'docs updates v'+pkg.version
+					message: 'docs updates v'+pkg.version,
+					remoteUrl:'git@github.com:MediaMath/strand.git'
 				}));
 		});
 

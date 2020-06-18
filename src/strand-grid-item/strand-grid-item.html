@@ -1,0 +1,46 @@
+<!--
+ * @license
+ * Copyright (c) 2015 MediaMath Inc. All rights reserved.
+ * This code may only be used under the BSD style license found at http://mediamath.github.io/strand/LICENSE.txt
+
+-->
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../strand-checkbox/strand-checkbox.html">
+<link rel="import" href="../strand-icon/strand-icon.html">
+<link rel="import" href="../strand-spinner/strand-spinner.html">
+<link rel="import" href="../shared/behaviors/refable.html"/>
+
+<dom-module id="strand-grid-item">
+	<link rel="import" type="css" href="strand-grid-item.css"/>
+	<template>
+		<div class="_mm_item">
+			<div class="_mm_column checkbox" hidden$="{{!scope.selectable}}">
+				<strand-checkbox on-tap="_onItemSelected" checked="{{model.selected}}" icon="{{scope.icon}}"></strand-checkbox>
+			</div>
+			<div id="carat" class="_mm_column toggle" hidden$="{{!scope.expandable}}">
+				<strand-icon width="10" height="10" type="carat" on-tap="_onItemExpanded"></strand-icon>
+			</div>
+			<div id="columnContainer">
+				<template is="dom-repeat" items="{{scope._columns}}" as="column" on-dom-change="_checkDistributedNodesAsync">
+					<div class$="{{_computeColumnClass(column.node.alignColumn)}}" style$="{{_computeColumnStyle(column.node.width)}}" id="{{column.node.field}}">
+						<div class="columnContentWrapper">
+							<template is="dom-if" if="{{model}}" on-dom-change="_checkDistributedNodesAsync">
+								<span class="columnContent">
+									<content id="{{column.node.field}}" select$="{{_columnContentSelector(column.node.field)}}"></content>
+								</span>
+								<span class="columnContent" hidden$="{{_isOverridden(column.node.field, _overridden.*)}}">[[_computeColumnValue(column.node.field, model, model.*)]]</span>
+							</template>
+							<template is="dom-if" if="{{!model}}" restamp>
+								<span class="columnContent fake-content" style$="width:[[_setRandomWidth(column.node.field)]];">&nbsp;</span>
+							</template>
+						</div>
+					</div>
+				</template>
+			</div>
+		</div>
+		<template is="dom-if" if="{{model.expanded}}" restamp="true">
+			<content id="expansion" select=".expansion"></content>
+		</template>
+	</template>
+</dom-module>
+<script src="strand-grid-item.js"></script>

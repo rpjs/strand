@@ -116,9 +116,9 @@ This code may only be used under the BSD style license found at http://mediamath
 
 
 
-	function Placeholder (inner) {
+	function Placeholder (inner, outer) {
 		this._innerIndex = 0|inner;
-		this._outerIndex = -1;
+		this._outerIndex = 0|outer;
 	}
 
 	Placeholder.prototype.getInnerIndex = function () {
@@ -133,6 +133,10 @@ This code may only be used under the BSD style license found at http://mediamath
 		var old = this._outerIndex;
 		this._outerIndex = 0|index;
 		return old;
+	};
+
+	Placeholder.prototype.deltaOuterIndex = function (amount) {
+		return this.setOuterIndex(this._outerIndex + (0|amount)); // spliceIn
 	};
 
 
@@ -173,6 +177,8 @@ This code may only be used under the BSD style license found at http://mediamath
 
 		if (elevation > position) {
 			return this._getUnknownIndexAtElevation(elevation, continuum, count, recycler, ceiling);
+		} else if (elevation < 0) {
+			return -1;
 		} else {
 			return this._getKnownIndexAtElevation(elevation, continuum, count, 0, ceiling);
 		}
@@ -189,6 +195,9 @@ This code may only be used under the BSD style license found at http://mediamath
 			index = (lower + upper) >> 1;
 			position = +continuum.getElevation(index) || 0;
 			if (elevation < position) {
+				if (upper === lower) {
+					break;
+				}
 				upper = index;
 			} else if (index > lower) {
 				lower = index;
@@ -240,13 +249,18 @@ This code may only be used under the BSD style license found at http://mediamath
 		if (delta) {
 			return this._getKnownIndexAtElevation(elevation, continuum, upper, lower, ceiling);
 		} else {
-			return -1;
+			return -1 - count;
 		}
 	};
 
 	ContinuumInterface.prototype.getDiscreteCount = function () {
 		var continuum = this.getContinuum();
 		return continuum.getDiscreteCount.apply(continuum, arguments);
+	};
+
+	ContinuumInterface.prototype.adjustHeight = function (index, delta) {
+		var continuum = this.getContinuum();
+		return continuum.adjustHeight.apply(continuum, arguments);
 	};
 
 	ContinuumInterface.prototype.setHeight = function (index, height) {
@@ -275,6 +289,21 @@ This code may only be used under the BSD style license found at http://mediamath
 	ContinuumInterface.prototype.isHeightKnown = function (index) {
 		var continuum = this.getContinuum();
 		return continuum.isHeightKnown.apply(continuum, arguments);
+	};
+
+	ContinuumInterface.prototype.addHeights = function (index, amount, initializations) {
+		var continuum = this.getContinuum();
+		return continuum.addHeights.apply(continuum, arguments);
+	};
+
+	ContinuumInterface.prototype.removeHeights = function (index, amount) {
+		var continuum = this.getContinuum();
+		return continuum.removeHeights.apply(continuum, arguments);
+	};
+
+	ContinuumInterface.prototype.calculateOverflow = function (index, amount) {
+		var continuum = this.getContinuum();
+		return continuum.calculateOverflow.apply(continuum, arguments);
 	};
 
 
@@ -349,9 +378,9 @@ This code may only be used under the BSD style license found at http://mediamath
 	};
 
 	Ledger.prototype.track = function (young) {
-		var handled = this._handled,
-			before = this._greatestNotOverHandled(young, handled),
-			after = before ? before.getTail(0) : handled.getHead(0);
+		var handled = this._handled;
+		var before = this._greatestNotOverHandled(young, handled);
+		var after = before ? before.getTail(0) : handled.getHead(0);
 
 		if (before && before.body.end(young)) {
 			if (after && after.body.begin(young)) {
@@ -368,11 +397,11 @@ This code may only be used under the BSD style license found at http://mediamath
 	};
 
 	Ledger.prototype._greatestNotOverHandled = function (young, handled) {
-		var iterator = handled.getHead(0),
-			indexRange = iterator.body,
-			start = indexRange.getIndex(),
-			limit = indexRange.getRange() + start,
-			result = null;
+		var iterator = handled.getHead(0);
+		var indexRange = iterator.body;
+		var start = indexRange.getIndex();
+		var limit = indexRange.getRange() + start;
+		var result = null;
 
 		while (limit < young) {
 			result = iterator;
@@ -389,19 +418,19 @@ This code may only be used under the BSD style license found at http://mediamath
 	};
 
 	Ledger.prototype.wasTracked = function (index) {
-		var value = 0|index,
-			iterator = this._greatestNotOverHandled(value, this._handled);
+		var value = 0|index;
+		var iterator = this._greatestNotOverHandled(value, this._handled);
 		return 0|(iterator && iterator.body.contains(value));
 	};
 
 
 
-	function makePlaceholder(inner) {
-		return new Placeholder(inner);
+	function makePlaceholder(inner, outer) {
+		return new Placeholder(inner, outer);
 	}
 
 	function Solver () {
-		var placeholder = makePlaceholder(0);
+		var placeholder = makePlaceholder(0, -1);
 
 		this._placeholders = null;
 		this._placeholders = new Snake(null, null);
@@ -435,7 +464,9 @@ This code may only be used under the BSD style license found at http://mediamath
 						this._jump(iface, placeholders, lower, currentCount, recycler);
 					}
 
-					this._pushUp(iface, placeholders, deltaCount, available, recycler);
+					if (!destructive) {
+						this._pushUp(iface, placeholders, deltaCount, available, recycler);
+					}
 				} else {
 					if (deltaCount < 0) {
 						this._cutUp(iface, placeholders, -deltaCount, available, recycler);
@@ -450,8 +481,8 @@ This code may only be used under the BSD style license found at http://mediamath
 					}
 				}
 			} else if (deltaCount < 0) {
-				this._cutUp(iface, placeholders, deltaUpper, available, recycler);
-				this._cutDown(iface, placeholders, -deltaLower, available, recycler);
+				this._cutUp(iface, placeholders, -deltaUpper, available, recycler);
+				this._cutDown(iface, placeholders, deltaLower, available, recycler);
 			}
 		} else {
 			if (deltaUpper < 0) {
@@ -462,7 +493,9 @@ This code may only be used under the BSD style license found at http://mediamath
 						this._jump(iface, placeholders, lower, currentCount, recycler);
 					}
 
-					this._pushDown(iface, placeholders, deltaCount, available, recycler);
+					if (!destructive) {
+						this._pushDown(iface, placeholders, deltaCount, available, recycler);
+					}
 				} else {
 					if (deltaCount < 0) {
 						this._cutDown(iface, placeholders, -deltaCount, available, recycler);
@@ -477,8 +510,10 @@ This code may only be used under the BSD style license found at http://mediamath
 					}
 				}
 			} else if (deltaCount > 0) {
-				this._pushUp(iface, placeholders, deltaUpper, available, recycler);
-				this._pushDown(iface, placeholders, -deltaLower, available, recycler);
+				if (!destructive) {
+					this._pushUp(iface, placeholders, deltaUpper, available, recycler);
+					this._pushDown(iface, placeholders, -deltaLower, available, recycler);
+				}
 			}
 		}
 	};
@@ -529,7 +564,6 @@ This code may only be used under the BSD style license found at http://mediamath
 	};
 
 	Solver.prototype._pushUp = function (iface, placeholders, amount, available, recycler) {
-		var p = null;
 		var snake = placeholders.getTail();
 		var young = snake ? snake.body.getOuterIndex() : -1;
 		var index = 0;
@@ -537,15 +571,12 @@ This code may only be used under the BSD style license found at http://mediamath
 
 		while (count-- > 0) {
 			index = this._claimAvailable(placeholders, available);
-			p = makePlaceholder(index);
-			p.setOuterIndex(++young);
-			placeholders.addTail().body = p;
+			placeholders.addTail().body = makePlaceholder(index, ++young);
 			iface.notify(index, young, -1, recycler);
 		}
 	};
 
 	Solver.prototype._pushDown = function (iface, placeholders, amount, available, recycler) {
-		var p = null;
 		var snake = placeholders.getHead(0);
 		var young = snake ? snake.body.getOuterIndex() : -1;
 		var index = 0;
@@ -553,9 +584,7 @@ This code may only be used under the BSD style license found at http://mediamath
 
 		while (count-- > 0) {
 			index = this._claimAvailable(placeholders, available);
-			p = makePlaceholder(index);
-			p.setOuterIndex(--young);
-			placeholders.addHead().body = p;
+			placeholders.addHead().body = makePlaceholder(index, --young);
 			iface.notify(index, young, -1, recycler);
 		}
 	};
@@ -623,30 +652,90 @@ This code may only be used under the BSD style license found at http://mediamath
 		return snake ? snake.body.getOuterIndex() : -2;
 	};
 
-	Solver.prototype.propagateHeightChangeAtIndex = function (index, iface, recycler) {
-		var at = 0|index,
-			snake = this._placeholders.getHead(0),
-			outer = 0;
+	Solver.prototype._snakeWithOuterGreaterThanOrEqualToIndex = function (outer) {
+		var at = 0|outer;
+		var snake = this._placeholders.getHead(0);
 
 		while (snake && at > snake.body.getOuterIndex()) {
 			snake = snake.getTail();
 		}
 
+		return snake;
+	};
+
+	Solver.prototype.propagateHeightChangeAtIndex = function (outer, iface, recycler) {
+		var snake = this._snakeWithOuterGreaterThanOrEqualToIndex(0|outer);
+		var unchanged = 0;
+
 		while (snake) {
-			outer = snake.body.getOuterIndex();
-			iface.notify(snake.body.getInnerIndex(), outer, outer, recycler);
+			unchanged = snake.body.getOuterIndex();
+			iface.notify(snake.body.getInnerIndex(), unchanged, unchanged, recycler);
 			snake = snake.getTail();
+		}
+	};
+
+	Solver.prototype.spliceOut = function (outer, iface, recycler) {
+		var snake = this._snakeWithOuterGreaterThanOrEqualToIndex(outer);
+		var inner = 0;
+		var index = (0|this._placeholders.getCount()) - 1;
+
+		if (snake &&
+			snake.body.getOuterIndex() === outer) {
+			inner = snake.body.getInnerIndex();
+			snake = snake.dropTailwise(1);
+			this._abandonAvailable(inner, this._available);
+
+			if (snake !== this._placeholders) {
+				while (snake) {
+					index--;
+					snake.body.deltaOuterIndex(-1);
+					snake = snake.getTail();
+				}
+			}
+
+			iface.notify(-1 - inner, -1 - index, outer, recycler);
+		} else {
+			// throw new Error("could not find spliced-out outer index === "+outer);
+		}
+	};
+
+	Solver.prototype.spliceIn = function (outer, iface, recycler) {
+		var snake = this._snakeWithOuterGreaterThanOrEqualToIndex(outer);
+		var inner = 0;
+		var index = 0|this._placeholders.getCount();
+
+		if (snake &&
+			snake.body.getOuterIndex() === outer) {
+			inner = this._claimAvailable(this._placeholders, this._available);
+			snake.addHead().body = makePlaceholder(inner, outer);
+
+			while (snake) {
+				index--;
+				snake.body.deltaOuterIndex(1);
+				snake = snake.getTail();
+			}
+
+			iface.notify(-1 - inner, outer, -1 - index, recycler);
+		} else {
+			// throw new Error("could not find spliced-in outer index === "+outer);
 		}
 	};
 
 
 
-	function Transactor (iface) {
+	function Transactor (iface, fence, solver, recycler) {
 		this._index = -1;
 		this._height = 0;
 		this._delta = 0;
+		this._spliced = 0|false;
 		this._continuumInterface = null;
 		this._continuumInterface = iface;
+		this._fence = null;
+		this._fence = fence;
+		this._solver = null;
+		this._solver = solver;
+		this._recycler = null;
+		this._recycler = recycler;
 	}
 
 	Transactor.prototype.getHeight = function () {
@@ -669,7 +758,7 @@ This code may only be used under the BSD style license found at http://mediamath
 		return this._index;
 	};
 
-	Transactor.prototype.resetCandidate = function () {
+	Transactor.prototype._resetCandidate = function () {
 		this._index = -1;
 	};
 
@@ -680,6 +769,40 @@ This code may only be used under the BSD style license found at http://mediamath
 				this._index = index;
 			}
 		}
+	};
+
+	Transactor.prototype._splicing = function (spliced) {
+		var wasSpliced = 0|this._spliced;
+		this._spliced = 0|spliced;
+		return wasSpliced;
+	};
+
+	Transactor.prototype.addHeightsAtIndex = function (index, amount, initializations) {
+		var iface = this._continuumInterface;
+		var count = (0|amount);
+		var delta = iface.addHeights.apply(iface, arguments);
+		var place = 0;
+		if (count) {
+			this._splicing(0|true);
+			for (place; place < amount; place++) {
+				this._solver.spliceIn(index + place, iface, this._recycler);
+			}
+		}
+		this._considerCandidate(0|index, delta);
+	};
+
+	Transactor.prototype.removeHeightsAtIndex = function (index, amount) {
+		var iface = this._continuumInterface;
+		var count = (0|amount) - iface.calculateOverflow(index, amount);
+		var delta = iface.removeHeights.apply(iface, arguments);
+		var place = amount;
+		if (count) {
+			this._splicing(0|true);
+			for (place; place-- > 0 ; ) {
+				this._solver.spliceOut(index + place, iface, this._recycler);
+			}
+		}
+		this._considerCandidate(0|index, delta);
 	};
 
 	Transactor.prototype.assignHeightAtIndex = function (index, height) {
@@ -696,6 +819,32 @@ This code may only be used under the BSD style license found at http://mediamath
 		this.setHeight(+height || 0);
 		this.setDelta(+delta || 0);
 		this._considerCandidate(0|index, +delta || 0);
+	};
+
+	Transactor.prototype.repositionFrame = function (position) {
+		this._fence.reposition.apply(this._fence, arguments);
+	};
+
+	Transactor.prototype.translateFrame = function (change) {
+		this._fence.translate.apply(this._fence, arguments);
+	};
+
+	Transactor.prototype.resizeFrame = function (size) {
+		this._fence.resize.apply(this._fence, arguments);
+	};
+
+	Transactor.prototype.adjustFrame = function (grow) {
+		this._fence.adjust.apply(this._fence, arguments);
+	};
+
+	Transactor.prototype.repadFrame = function (ahead, behind) {
+		this._fence.repad.apply(this._fence, arguments);
+	};
+
+	Transactor.prototype.setFrame = function (position, size, above, below) {
+		this.repositionFrame(position);
+		this.resizeFrame(size);
+		this.repadFrame(above, below);
 	};
 
 
@@ -725,7 +874,7 @@ This code may only be used under the BSD style license found at http://mediamath
 
 		this._solver = new Solver();
 
-		this._transactor = new Transactor(this._continuumInterface);
+		this._transactor = new Transactor(this._continuumInterface, this._fence, this._solver, this);
 
 		this._process();
 	}
@@ -743,7 +892,12 @@ This code may only be used under the BSD style license found at http://mediamath
 		var ceiling = true;
 
 		if (!arguments.length || limit < 0) {
-			limit = 1 + iface.getIndexAtElevation(this.getFrameUpperBound(), this, 0|ceiling);
+			limit = iface.getIndexAtElevation(this.getFrameUpperBound(), this, 0|ceiling);
+			if (limit < 0) {
+				limit = -limit - 1;
+			} else {
+				limit += 1;
+			}
 			clamp = 0|(amount > limit);
 		}
 
@@ -817,17 +971,20 @@ This code may only be used under the BSD style license found at http://mediamath
 	Recycler.prototype.transactHeightMutations = function (transaction, extra, context, params) {
 		var transactor = this._transactor;
 		var index = -1;
+		var spliced = 0|false;
 
-		transactor.resetCandidate();
+		transactor._resetCandidate();
 
 		transaction.apply(transactor, arguments);
 
 		index = transactor.getCandidate();
 
 		if (index > -1) {
+			spliced = 0|transactor._splicing(0|false);
+
 			this._solver.propagateHeightChangeAtIndex(index, this._continuumInterface, this);
 
-			this._process(NONDESTRUCTIVE);
+			this._process(NONDESTRUCTIVE); // NOTE: users of this interface will likely want to this.cull()
 		}
 	};
 
@@ -953,7 +1110,6 @@ This code may only be used under the BSD style license found at http://mediamath
 		var solver = this._solver;
 		var span = 0;
 
-
 		if (lower < 0 &&
 			upper < 0) {
 			span = iface.getElevation(iface.getDiscreteCount());
@@ -987,49 +1143,138 @@ This code may only be used under the BSD style license found at http://mediamath
 
 
 
-	function ContiguousRecycler (heightGetter, unavailableIndexGetter, changeListener, continuumProvider) {
-		var interpret = [];
-		var transform = [];
-		var previous = [];
-		var active = 0;
+	function _clusterSwapOut (clustered2sparse, sparse2clustered, previous, clustered, active) {
+		var swap = 0;
+		var young = -1;
 
-		Recycler.call(this, heightGetter, unavailableIndexGetter, function (inner, young, old, recycler) {
-			var count = interpret.length;
-			if (old < 0) {
-				while (count < inner) {
-					interpret[count++] = -1;
+		previous[clustered] = previous[active];
+		previous[active] = young;
+
+		swap = clustered2sparse[clustered];
+		clustered2sparse[clustered] = clustered2sparse[active];
+		clustered2sparse[active] = swap;
+
+		swap = sparse2clustered[clustered2sparse[clustered]];
+		sparse2clustered[clustered2sparse[clustered]] = sparse2clustered[clustered2sparse[active]];
+		sparse2clustered[clustered2sparse[active]] = swap;
+	}
+
+	function _clusterSpliceIn (clustered2sparse, sparse2clustered, previous, active, id, young) {
+		var sparse = -1 - id;
+		var clustered = -1;
+		var limit = young - 1;
+
+		for (clustered = 0; clustered < active; clustered++) {
+			if (previous[clustered] > limit) {
+				previous[clustered]++;
+			}
+		}
+
+		clustered = active;
+		clustered2sparse[clustered] = sparse;
+		sparse2clustered[sparse] = clustered;
+		previous[clustered] = young;
+
+		return clustered;
+	}
+
+	function _clusterSpliceOut (clustered2sparse, sparse2clustered, previous, active, id, old) {
+		var clustered = -1;
+		var index = 0;
+		var limit = old - 1;
+
+		for (index; index < active; index++) {
+			if (previous[index] > limit) {
+				if (old === previous[index]--) {
+					clustered = index;
 				}
-				interpret[inner] = active;
-				transform[active] = inner;
-				previous[interpret[inner]] = young;
-				active++;
-				changeListener.call(this, interpret[inner], young, old, recycler);
-			} else if (young < 0) {
-				active--;
-				changeListener.call(this, transform[active], young, previous[transform[active]], recycler);
-				changeListener.call(this, interpret[inner], previous[transform[active]], previous[interpret[inner]], recycler);
-				interpret[inner] = interpret[transform[active]];
-				interpret[transform[active]] = -1;
-				transform[active] = -1;
+			}
+		}
+
+		_clusterSwapOut(clustered2sparse, sparse2clustered, previous, clustered, active - 1);
+
+		return clustered;
+	}
+
+	function _clusterHandler (clustered2sparse, sparse2clustered, previous, active, id, young, old) {
+		var sparse = 0|id;
+		var clustered = active;
+		var count = sparse2clustered.length;
+
+		if (old < 0) {
+			while (count < sparse) {
+				sparse2clustered[count++] = -1;
+			}
+			sparse2clustered[sparse] = clustered;
+			clustered2sparse[clustered] = sparse;
+		} else {
+			clustered = sparse2clustered[sparse];
+			if (young < 0) {
+				if (clustered !== active - 1) {
+					_clusterSwapOut(clustered2sparse, sparse2clustered, previous, clustered, active - 1);
+					return clustered;
+				}
+			}
+		}
+
+		previous[clustered] = young;
+		return clustered;
+	}
+
+	function ClusteredRecycler (heightGetter, unavailableIndexGetter, changeListener, continuumProvider) {
+		var clustered2sparse = []; // sparse values indexed by clustered values
+		var sparse2clustered = []; // clustered values indexed by sparse values
+		var previous = []; // stores the contiguous "old" position that should be passed to the handler
+		var active = 0; // the number of contiguous indices in use
+
+		Recycler.call(this, heightGetter, unavailableIndexGetter, function (id, young, old, recycler) {
+			var spliced = 0|(0|id < 0);
+			var clustered = -1;
+
+			if (spliced) {
+				if (old < 0) {
+					clustered = _clusterSpliceIn(clustered2sparse, sparse2clustered, previous, active, id, young);
+					active++;
+					changeListener.call(this, -1 - clustered, young, old, recycler);
+				} else if (young < 0) {
+					clustered = _clusterSpliceOut(clustered2sparse, sparse2clustered, previous, active, id, old);
+					active--;
+					changeListener.call(this, -1 - clustered, young, old, recycler);
+				} else {
+					// "in-place echanged" not (yet) supported (use previous.indexOf(young && old))
+				}
 			} else {
-				previous[interpret[inner]] = young;
-				changeListener.call(this, interpret[inner], young, old, recycler);
+				clustered = _clusterHandler(clustered2sparse, sparse2clustered, previous, active, id, young, old);
+
+				if (old < 0) {
+					active++;
+				} else if (young < 0) {
+					active--;
+				}
+
+				if (clustered < 0) {
+					clustered = -1 - clustered;
+					changeListener.call(this, active, young, previous[clustered], recycler);
+					changeListener.call(this, clustered, previous[clustered], old, recycler);
+				} else {
+					changeListener.call(this, clustered, young, old, recycler);
+				}
 			}
 		}, continuumProvider);
 	}
 
 
 
-	ContiguousRecycler.prototype = new Recycler(function (index) {
+	ClusteredRecycler.prototype = new Recycler(function (index) {
 		return 44;
 	}, function (request) {
 		return -1;
 	}, function (inner, young, old, recycler) {
 	}, null);
 
-	ContiguousRecycler.prototype.SparseRecycler = Recycler;
+	ClusteredRecycler.prototype.SparseRecycler = Recycler;
 
-	scope.Recycler = ContiguousRecycler;
+	scope.Recycler = ClusteredRecycler;
 
 } (window));
 </script>

@@ -1,0 +1,73 @@
+<!-- Default Example -->
+<strand-footer unresolved fitparent>
+	<strand-button>
+		<label>Save</label>
+	</strand-button>
+</strand-footer>
+<!-- Display Message / Multiple Buttons Example -->
+<strand-footer id="tf1" unresolved fitparent>
+	<strand-action id="cancelLink" underline="true">
+		<label>Cancel</label>
+	</strand-action>
+	<strand-button type="secondary" id="saveAndClose">
+		<label>Save &amp; Close</label>
+	</strand-button>
+	<strand-button id="saveAndAdd">
+		<label>Save &amp; Add Another</label>
+	</strand-button>
+</strand-footer>
+<!-- Align Items Left or Right Example -->
+<strand-footer id="tf2" unresolved fitparent>
+	<strand-checkbox class="left">
+		<label>Don't show again</label>
+	</strand-checkbox>
+	<strand-button>
+		<label>Close</label>
+	</strand-button>
+</strand-footer>
+<!-- Example Scripts -->
+<script>
+	var tf1,
+		tf2,
+		cancelLink,
+		saveAndClose,
+		saveAndAdd;
+
+	window.addEventListener("WebComponentsReady", function() {
+		tf1 = document.querySelector("#tf1");
+		tf2 = document.querySelector("#tf2");
+
+		cancelLink = document.querySelector("#cancelLink");
+		saveAndClose = document.querySelector("#saveAndClose");
+		saveAndAdd = document.querySelector("#saveAndAdd");
+
+		cancelLink.addEventListener("click", cancelHandler);
+		saveAndClose.addEventListener("click", saveCloseHandler);
+		saveAndAdd.addEventListener("click", saveAddHandler);
+	});
+
+	function cancelHandler(e) {
+		e.preventDefault();
+		console.log("cancelHandler");
+		// Test messaging:
+		tf1.message = "The user clicked 'cancel'.";
+		tf1.type = "warning";
+		tf1.showMessage();
+	}
+
+	function saveCloseHandler(e) {
+		console.log("saveCloseHandler");
+		// Test messaging:
+		tf1.message = "The user completed an action.";
+		tf1.type = "success";
+		tf1.showMessage();
+	}
+
+	function saveAddHandler(e) {
+		console.log("saveAddHandler");
+		// Test messaging:
+		tf1.message = "There was an error.";
+		tf1.type = "error";
+		tf1.showMessage();
+	}
+</script>

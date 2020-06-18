@@ -1,0 +1,30 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../shared/behaviors/resolvable.html"/>
+<link rel="import" href="../shared/behaviors/autoclosable.html">
+<link rel="import" href="../shared/behaviors/autotogglable.html">
+<link rel="import" href="../shared/behaviors/stackable.html">
+<link rel="import" href="../shared/behaviors/positionable-panel.html"/>
+<link rel="import" href="../shared/behaviors/refable.html"/>
+<link rel="import" href="../strand-icon/strand-icon.html"/>
+<link rel="import" href="../strand-list-item/strand-list-item.html"/>
+<link rel="import" href="../shared/behaviors/refable.html"/>
+
+<dom-module name="strand-menu">
+	<link rel="import" type="css" href="strand-menu.css" />
+
+	<template>
+		<div id="container" style$="{{_containerStyle}}">
+			<content id="content"></content>
+			<template is="dom-repeat" items="{{data}}">
+				<strand-list-item value="{{item.value}}">
+				<template is="dom-if" if="{{item.icon}}" id="repeat">
+					<strand-icon height="15" width="15" type="{{item.icon}}"></strand-icon>
+				</template>
+					{{item.name}}
+				</strand-list-item>
+			</template>
+		</div>
+	</template>
+</dom-module>
+
+<script src="strand-menu.js"></script>

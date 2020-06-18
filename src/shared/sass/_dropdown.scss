@@ -39,7 +39,7 @@
 		transform: scaleY(-1);
 	}
 
-	mm-icon {
+	strand-icon {
 		pointer-events: none;
 	}
 
@@ -129,12 +129,6 @@ $border-color: $color-A18 !default;
 		#caratIcon {
 			padding: 0 8px 0 10px;
 		}
-	}
-
-	#container > ::content mm-list-item,
-	mm-list-item {
-		font-size: 11px !important;
-		line-height: 13px !important;
 	}
 }
 

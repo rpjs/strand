@@ -113,7 +113,7 @@
 			p = path.split(".");
 		}
 		return p.reduce(function(prev, curr) {
-			if (!_isType(prev, "object") || !(curr in prev)) return null;
+			if (!prev || typeof prev !== 'object' || !(curr in prev)) return null;
 			return prev[curr];
 		}, object);
 	}
@@ -146,6 +146,19 @@
 		};
 	}
 
+	function _nodeCheckIf(nodeObj, callback) {
+		if (nodeObj.conditional) {
+			var useMe = !_isDef(nodeObj.if) || JSON.parse(nodeObj.if);
+			var iff = _isDef(nodeObj.if) && JSON.parse(nodeObj.if);
+			if (iff) {
+				return callback(nodeObj);
+			} else {
+				return null;
+			}
+		}
+		return callback(nodeObj);
+	}
+
 	function _compoundObserver(obj, observer) {
 		for(var i in obj) {
 			if (obj.hasOwnProperty(i)) {
@@ -156,6 +169,62 @@
 			}
 		}
 		return observer;
+	}
+
+	function _pluck(target, keys) {
+		if ( _isType(target,'Array') ) {
+			return target.map(function(t) { return _objPluck(t, keys) });
+		} else {
+			return _objPluck(target, keys);
+		}
+	}
+
+	function _objPluck(obj, keys, o) {
+		o = o || {};
+		Object.keys(obj).forEach(function(key) {
+			if (keys.indexOf(key) !== -1) {
+				o[key] = obj[key];
+			}
+			if (_isType(obj[key],'object')) {
+				_objPluck(obj[key], keys, o);
+			}
+		});
+		return o;
+	}
+
+	function _cloneObj(obj) {
+		var result = {};
+		Object.keys(obj).forEach(function(key) {
+			result[key] = obj[key];
+		});
+		return result;
+	}
+
+	function _mergeObj(fst, snd) {
+		var merged = _cloneObj(fst);	
+		Object.keys(snd).forEach(function(key) {
+			merged[key] = snd[key]
+		});
+		return merged;
+	}
+
+	function _indexByProp(data, prop) {
+		var o = {};
+		for(var i=data.length-1; i>=0; i--) {
+			var key = data[i][prop];
+			o[key] = data[i];
+		}
+		return o;
+	}
+
+	function _indexAllByProp(data, prop) {
+		var o = {};
+		for(var i=data.length-1; i>=0; i--) {
+			var key = data[i][prop];
+			if(!o[key]) o[key] = [];
+			o[key].push(data[i]);
+		}
+		return o;
 	}
 
 	var DataUtils  = {
@@ -206,6 +275,7 @@
 
 		nodeInnerValue: _nodeInnerValue,
 		nodeToParam: _nodeToParam,
+		nodeCheckIf: _nodeCheckIf,
 
 		mergeParamLists: function() {
 			var i,
@@ -232,7 +302,13 @@
 		},
 
 		getPathValue:_getPathValue,
-		setPathValue:_setPathValue
+		setPathValue:_setPathValue,
+		pluck:_pluck,
+		cloneObj: _cloneObj,
+		mergeObj: _mergeObj,
+
+		indexByProp: _indexByProp,
+		indexAllByProp: _indexAllByProp
 	};
 
 	scope.DataUtils = DataUtils;

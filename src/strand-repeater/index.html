@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script language="javascript" src="../../bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+		<link rel="import" href="../strand.html" />
+
+		<style type="text/css" is="custom-style">
+			body, html {
+				height: 100%;
+				min-height: 100%;
+			}
+
+			body {
+				margin:0;
+				padding:0;
+				background: #eee;
+			}
+
+			.col {
+				-webkit-box-sizing: border-box;
+				-moz-box-sizing: border-box;
+				box-sizing: border-box;
+				display: block;
+				padding: 0 20px;
+			}
+
+			.col.c4 {
+				margin-left: auto;
+				margin-right: auto;
+				width: 80%;
+			}
+
+			.col:after {
+				visibility: hidden;
+				display: block;
+				font-size: 0;
+				content: " ";
+				clear: both;
+				height: 0;
+			}
+
+			p {
+				font-family: sans-serif;
+				color: #333;
+				font-size: 12px;
+				line-height: 18px;
+				margin: 20px 0;
+			}
+
+			.bold { font-weight: bold; }
+		</style>
+	</head>
+	<body>
+		<dom-module id="test-repeater-view">
+			<style>
+				.data-display {
+					background-color: #d9d9d9;
+					color: #333;
+					border-radius: 5px;
+					font-family: monospace;
+					font-size: 16px;
+					padding: 1em;
+					margin: 1em 0;
+				}
+
+				.wrapper {
+					display: block;
+					margin: 1em 0;
+				}
+
+				#repeater {
+					margin-bottom: 1em;
+				}
+			</style>
+
+			<template>
+				<div class="wrapper">
+					<strand-header size="large">strand-repeater</strand-header>
+				</div>
+
+				<strand-repeater mixin-findable="{{mixinFindable}}" added="{{myAdded}}" removed="{{myRemoved}}" modified="{{myModified}}" data="{{myData}}" id="repeater" add-row-label="+Custom Add Row Label">
+					<template preserve-content>
+						<strand-repeater-row model="{{model}}" scope="{{scope}}" index="{{index}}">
+							<strand-input name="name" validation="blank" value="{{model.name}}" disabled="{{model.disabled}}"></strand-input>
+							<strand-dropdown placeholder="Select a Test Item" name="firstOption" value="{{model.firstOption}}" overflow="visible" disabled="{{model.disabled}}" style="width: 100px">
+								<strand-list-item>Test Item 1</strand-list-item>
+								<strand-list-item>Test Item 2</strand-list-item>
+								<strand-list-item>Test Item 3</strand-list-item>
+								<strand-list-item>Test Item 4</strand-list-item>
+							</strand-dropdown>
+							<strand-group name="secondOption" value="{{model.secondOption}}" disabled="{{model.disabled}}">
+								<strand-radio><label>Test 1</label></strand-radio>
+								<strand-radio><label>Test 2</label></strand-radio>
+								<strand-radio><label>Test 3</label></strand-radio>
+							</strand-group>
+						</strand-repeater-row>
+					</template>
+				</strand-repeater>
+
+				<div class="wrapper">
+					<strand-header size="small">Data</strand-header>
+					<div class="data-display">{{formatData(myData.*, _refresh)}}</div>
+					<strand-header size="small">Added</strand-header>
+					<div class="data-display">{{formatData(myAdded.*, _refresh)}}</div>
+					<strand-header size="small">Modified</strand-header>
+					<div class="data-display">{{formatData(myModified.*, _refresh)}}</div>
+					<strand-header size="small">Removed</strand-header>
+					<div class="data-display">{{formatData(myRemoved.*, _refresh)}}</div>
+				</div>
+
+				<strand-button type="secondary" on-tap="refreshData"><label>Refresh Arrays</label></strand-button>
+				<strand-button id="addBunchBtn" on-tap="addABunchOfRows"><label>Add a Bunch of Rows</label></strand-button>
+				<strand-button on-click="validateRepeater" id="validateBtn"><label>Validate!</label></strand-button>
+			</template>
+		</dom-module>
+
+		<div class="col c4">
+			<test-repeater-view></test-repeater-view>
+		</div>
+
+		<script>
+			var data = [
+				{
+					name: "Barclay",
+					firstOption: "Test Item 1",
+					secondOption: "Test 1"
+				},
+				{
+					name: "Barry",
+					secondOption: "Test 2"
+				},
+				{
+					name: "Bart",
+					secondOption: "Test 3"
+				},
+				{
+					name: "Bert",
+					firstOption: "Test Item 1",
+					secondOption: "Test 3"
+				},
+				{
+					name: "Bort",
+					secondOption: "Test 3",
+					disabled: true
+				}
+			];
+
+			window.addEventListener('WebComponentsReady', function(e) {
+				Polymer({
+					is: 'test-repeater-view',
+
+					properties: {
+						myData: {
+							type: Array,
+							notify: true
+						},
+						myAdded: {
+							type: Array,
+							notify: true
+						},
+						myModified: {
+							type: Array,
+							notify: true
+						},
+						myRemoved: {
+							type: Array,
+							notify: true
+						},
+
+						_refresh: {
+							type: Boolean,
+							value: true,
+							notify: true
+						}
+					},
+
+					behaviors: [
+						StrandTraits.MixinFindable
+					],
+
+					observers: [
+						'_dataChanged(myData.*)'
+					],
+
+					_dataChanged: function(changeRecord) {
+						if(changeRecord && changeRecord.path.substr(0,8) === 'myData.#') this.refreshData();
+					},
+
+					validateRepeater: function() {
+						this.$.repeater.validate();
+					},
+
+					addABunchOfRows: function() {
+						for(var i=0; i<25; i++) this.$.repeater.add();
+					},
+
+					formatData: function(record) {
+						return JSON.stringify(record.base || record.value);
+					},
+
+					refreshData: function() {
+						this._refresh = !this._refresh;
+					},
+
+					ready: function() {
+						this.set('myData', data);
+
+						this.$.repeater.validation = function(data, added, modified, removed) {
+							var acceptedValues = ['Barclay', 'Barry', 'Bert', 'Bort'];
+
+							return data.map(function(datum) {
+								return {
+									cId: datum.cId,
+									name: (function(name) {
+										if(name === 'Bart') {
+											return "Name not accepted"
+										} else if(name === 'Bort') {
+											return "Out of Bort license plates"
+										}
+									})(datum.name),
+									firstOption: datum.firstOption ? null : "Must be selected"
+								}
+							});
+						}
+					},
+
+					mixinsForValuePath: function(template, path) {
+						if(path[0] === 'properties') {
+							return [{
+								myValidation: {
+									type: Function,
+									value: function() {
+										return function(str) {
+											return ''+str === 'AAA';
+										}
+									}
+								}
+							}];
+						}
+					}
+				});
+			});
+		</script>
+	</body>
+</html>

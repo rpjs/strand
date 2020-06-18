@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="../bower_components/webcomponentsjs/webcomponents.js"></script>
+  <script src="../bower_components/web-component-tester/browser.js"></script>
+  <script src="TestHelper.js"></script>
+  <script>
+    var should = chai.should();
+  </script>
+  <link rel="import" href="../build/strand.html">
+</head>
+<body>
+  <script>
+describe("strand-grid-item", function() {
+
+  it("should have a checkbox if scope is selectable", function(done) {
+    var item = document.querySelector("#testitem");
+    item.scope = item.scope || {};
+    item.set('scope.selectable',true);
+    flush(function(){
+      var container = Polymer.dom(item.root).querySelector(".checkbox"),
+        checkbox = container.querySelector('strand-checkbox');
+      checkbox.should.exist;
+      container.hidden.should.be.false;
+      done();
+    });
+  });
+
+  it("should have a toggle if scope is expandable", function(done) {
+    var item = document.querySelector("#testitem");
+    item.scope = item.scope || {};
+    item.set('scope.expandable',true);
+    flush(function(){
+      var container = Polymer.dom(item.root).querySelector(".toggle"),
+        toggle = container.querySelector('strand-icon');
+      toggle.should.exist;
+      container.hidden.should.be.false;
+      done();
+    });
+  });
+
+  it("should have columns", function(done) {
+    var item = document.querySelector("#testitem");
+    item.scope = item.scope || {};
+    item.set('scope._columns', [{node: {field: "foo", width: "50%"}}, {node: {field: "bar", width: "50%"}}]);
+
+    flush(function(){
+      var columns = Polymer.dom(item.root).querySelectorAll("#columnContainer ._mm_column");
+      columns.length.should.equal(2);
+      done();
+    });
+  });
+
+});
+</script>
+  <strand-grid-item id="testitem">Foo</strand-grid-item>
+</body>
+</html>

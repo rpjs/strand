@@ -70,13 +70,13 @@
 		return [
 			new AjaxCSRFPlugin({}, "csrf"),
 			new AjaxBusterPlugin({}, "buster"),
-			new AjaxAPIPlugin({}, "api"),
 			new AjaxPagePlugin({}, "page"),
+			new AjaxAPIPlugin({}, "api"),
 		];
 	}
 
 	function _getDefaultData(scope) {
-		if (scope && scope.is === "mm-collection") {
+		if (scope && scope.is === "strand-collection") {
 			return [];
 		}
 		return {};
@@ -84,12 +84,14 @@
 
 	scope.Sync = function(endpoint, options, data, domHook, saveResponse, plugins) {
 		this._eventPrefix = _eventPrefix;
+		this.isLoading = false;
 		this.endpoint = this.endpoint || endpoint || "/";
 		this.options = DataUtils.copy({
 			contentType:"application/x-www-form-urlencoded",
 			timeout:10000,
 			withCredentials:false,
 			concurrency:4,
+			resultOnError:false
 		}, this.options, options);
 
 		if (this.set) {
@@ -133,7 +135,7 @@
 			if (this.domHook)
 				configOpts = this.domHook(method, this, options);
 
-			options = _copyOptions({method:method, url:this.endpoint, body:data || this.data}, options, configOpts, this.options);
+			options = _copyOptions({method:method, url:this.endpoint, body:data || this.data}, this.options, configOpts, options);
 			options = this._plugin.processRequest(options);
 
 			if (options.mode === 'multi' && DataUtils.isType(data, 'array')) {
@@ -146,7 +148,12 @@
 				promise = this._ajax.exec(null, options);
 			}
 
+			this.isLoading = true;
+
 			promise.then(this._handleResult.bind(this), this._handleError.bind(this));
+			if (options.resultOnError) {
+				promise.then(null, this._handleResult.bind(this));
+			}
 
 			return promise;
 		},
@@ -155,6 +162,7 @@
 
 			this.fire("ready", result, {prefix:true});
 
+			this.isLoading = false;
 			result = this._plugin.processResponse(result);
 
 			if (this.saveResponse) {
@@ -169,6 +177,7 @@
 		},
 
 		_handleError: function(error) {
+			this.isLoading = false;
 			this.fire("error", error, {prefix:true});
 		},
 
@@ -223,6 +232,11 @@
 			saveResponse:{
 				type:Boolean,
 				value:true
+			},
+			isLoading:{
+				type:Boolean,
+				value:false,
+				notify:true
 			}
 		},
 		created: function() {
